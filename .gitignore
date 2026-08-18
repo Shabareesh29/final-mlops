@@ -216,3 +216,17 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+
+
+# MLOps generated artifacts
+artifact/
+
+# Raw and processed datasets
+data/ 
+
+# MLflow local files
+mlruns/ 
+
+# Logs
+logs/ 

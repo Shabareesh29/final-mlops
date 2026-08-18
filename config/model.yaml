@@ -1,0 +1,47 @@
+dataset:
+  train_file: data/raw/cmapss/train_FD004.txt
+  test_file: data/raw/cmapss/test_FD004.txt
+  rul_file: data/raw/cmapss/RUL_FD004.txt
+
+
+validation:
+  expected_columns: 26
+  expected_operational_settings: 3
+  expected_sensors: 21
+
+
+artifacts:
+  raw_dir: artifact/raw
+  interim_dir: artifact/interim
+  processed_dir: artifact/processed
+  model_dir: artifact/model
+  scaler_path: artifact/processed/scaler.pkl
+  model_path: artifact/model/random_forest_model.pkl
+
+
+transformation:
+  rul_cap: 125
+  scaler: standard
+
+evaluation:
+  metrics:
+    - mae
+    - rmse
+    - r2
+  predictions_path: artifact/evaluation/predictions.csv
+
+model:
+  random_state: 42
+  test_size: 0.2
+
+  random_forest:
+    n_estimators: 200
+    max_depth: 15
+    min_samples_split: 2
+    min_samples_leaf: 1
+
+
+mlflow:
+  experiment_name: predictive-maintenance-fd004
+  registered_model_name: predictive-maintenance-model
+
