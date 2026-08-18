@@ -7,6 +7,8 @@ from src.components.data_validation import DataValidation
 from src.components.data_transformation import DataTransformation
 from src.components.model_trainer import ModelTrainer
 from src.components.model_evaluation import ModelEvaluation
+from src.components.model_pusher import ModelPusher
+from src.components.candidate_model import CandidateModel
 
 
 def run_pipeline():
@@ -150,6 +152,26 @@ def run_pipeline():
 
         print("✓ Model training completed")
 
+        # =================================================
+        # CANDIDATE MODEL
+        # =================================================
+
+        print("\n" + "=" * 50)
+        print("CREATING CANDIDATE MODEL")
+        print("=" * 50)
+
+        candidate_config = (
+            config.get_candidate_model_config()
+        )
+
+        candidate_model = CandidateModel(
+            candidate_config
+        )
+
+        candidate_model.create_candidate()
+
+        print("\n✓ Candidate model created")
+
                 # =================================================
         # MODEL EVALUATION
         # =================================================
@@ -166,6 +188,40 @@ def run_pipeline():
 
         print("✓ Model evaluation completed")
 
+        # =================================================
+        # MODEL PUSHER
+        # =================================================
+
+    if evaluation_results["approved"]:
+
+        print("\n" + "=" * 50)
+        print("MODEL APPROVED")
+        print("=" * 50)
+
+        model_pusher_config = (
+            config.get_model_pusher_config()
+        )
+
+        model_pusher = ModelPusher(
+            model_pusher_config
+        )
+
+        model_pusher.push_model()
+
+    else:
+
+        print("\n" + "=" * 50)
+        print("MODEL REJECTED")
+        print("=" * 50)
+
+        print(
+        "\nCandidate model did not pass "
+        "the quality gate."
+    )
+
+        print(
+        "Production model was NOT changed."
+    )
         # =================================================
         # PIPELINE STATUS
         # =================================================

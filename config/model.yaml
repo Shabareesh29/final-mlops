@@ -31,7 +31,7 @@ evaluation:
   predictions_path: artifact/evaluation/predictions.csv
 
 model:
-  random_state: 42
+  random_state: 50
   test_size: 0.2
 
   random_forest:
@@ -45,3 +45,19 @@ mlflow:
   experiment_name: predictive-maintenance-fd004
   registered_model_name: predictive-maintenance-model
 
+prediction:
+  model_path: artifact/production_model/random_forest_model.pkl
+  scaler_path: artifact/processed/scaler.pkl
+  input_file_path: data/raw/prediction_input.csv
+  output_file_path: artifact/predictions/predictions.csv
+
+
+model_pusher:
+  model_export_path: artifact/production_model/random_forest_model.pkl
+
+model_quality:
+  max_mae: 15.0
+  min_r2: 0.80
+
+candidate_model:
+  model_path: artifact/candidate_model/random_forest_model.pkl

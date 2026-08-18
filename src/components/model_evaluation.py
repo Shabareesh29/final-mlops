@@ -23,33 +23,34 @@ class ModelEvaluation:
         print("MODEL EVALUATION")
         print("=" * 50)
 
-        # =========================================
-        # Load test data
-        # =========================================
+        # =================================================
+        # LOAD TEST DATA
+        # =================================================
 
         test_df = pd.read_csv(
             self.config.test_file_path
         )
 
         print(
-            f"Test data shape: {test_df.shape}"
+            f"\nTest data shape: "
+            f"{test_df.shape}"
         )
 
-        # =========================================
-        # Load trained model
-        # =========================================
+        # =================================================
+        # LOAD CANDIDATE MODEL
+        # =================================================
 
-        print("\nLoading trained model...")
+        print("\nLoading candidate model...")
 
         model = joblib.load(
             self.config.model_path
         )
 
-        print("✓ Model loaded")
+        print("✓ Candidate model loaded")
 
-        # =========================================
-        # Select final cycle of each engine
-        # =========================================
+        # =================================================
+        # SELECT FINAL CYCLE OF EACH ENGINE
+        # =================================================
 
         final_cycle_df = (
             test_df
@@ -68,9 +69,9 @@ class ModelEvaluation:
             f"{len(final_cycle_df)}"
         )
 
-        # =========================================
-        # Features and target
-        # =========================================
+        # =================================================
+        # FEATURES AND TARGET
+        # =================================================
 
         X_test = final_cycle_df.drop(
             columns=[
@@ -79,11 +80,13 @@ class ModelEvaluation:
             ]
         )
 
-        y_test = final_cycle_df["rul"]
+        y_test = final_cycle_df[
+            "rul"
+        ]
 
-        # =========================================
-        # Prediction
-        # =========================================
+        # =================================================
+        # GENERATE PREDICTIONS
+        # =================================================
 
         print("\nGenerating predictions...")
 
@@ -93,9 +96,9 @@ class ModelEvaluation:
 
         print("✓ Predictions generated")
 
-        # =========================================
-        # Metrics
-        # =========================================
+        # =================================================
+        # CALCULATE METRICS
+        # =================================================
 
         mae = mean_absolute_error(
             y_test,
@@ -112,9 +115,9 @@ class ModelEvaluation:
             predictions
         )
 
-        # =========================================
-        # Log metrics to MLflow
-        # =========================================
+        # =================================================
+        # LOG METRICS TO MLFLOW
+        # =================================================
 
         mlflow.log_metrics(
             {
@@ -124,31 +127,107 @@ class ModelEvaluation:
             }
         )
 
-        # =========================================
-        # Create prediction dataframe
-        # =========================================
+        # =================================================
+        # MODEL QUALITY GATE
+        # =================================================
+
+        print("\n" + "=" * 50)
+        print("MODEL QUALITY GATE")
+        print("=" * 50)
+
+        print(
+            f"\nMaximum allowed MAE: "
+            f"{self.config.max_mae}"
+        )
+
+        print(
+            f"Minimum required R²: "
+            f"{self.config.min_r2}"
+        )
+
+        print(
+            f"\nActual MAE: "
+            f"{mae:.4f}"
+        )
+
+        print(
+            f"Actual R²: "
+            f"{r2:.4f}"
+        )
+
+        # Model must satisfy BOTH conditions
+        model_approved = (
+            mae <= self.config.max_mae
+            and
+            r2 >= self.config.min_r2
+        )
+
+        # =================================================
+        # APPROVED
+        # =================================================
+
+        if model_approved:
+
+            print(
+                "\n✓ MODEL QUALITY GATE PASSED"
+            )
+
+            print(
+                "✓ Candidate model is approved"
+            )
+
+            mlflow.set_tag(
+                "model_status",
+                "approved"
+            )
+
+        # =================================================
+        # REJECTED
+        # =================================================
+
+        else:
+
+            print(
+                "\n❌ MODEL QUALITY GATE FAILED"
+            )
+
+            print(
+                "❌ Candidate model is rejected"
+            )
+
+            mlflow.set_tag(
+                "model_status",
+                "rejected"
+            )
+
+        # =================================================
+        # CREATE PREDICTION DATAFRAME
+        # =================================================
 
         predictions_df = pd.DataFrame(
             {
-                "unit_number": final_cycle_df[
-                    "unit_number"
-                ].values,
+                "unit_number":
+                    final_cycle_df[
+                        "unit_number"
+                    ].values,
 
-                "actual_rul": y_test.values,
+                "actual_rul":
+                    y_test.values,
 
-                "predicted_rul": predictions,
-
+                "predicted_rul":
+                    predictions,
             }
         )
 
         predictions_df["error"] = (
             predictions_df["actual_rul"]
-            - predictions_df["predicted_rul"]
+            -
+            predictions_df["predicted_rul"]
         )
 
-        # =========================================
-        # Save predictions
-        # =========================================
+        # =================================================
+        # SAVE PREDICTIONS
+        # =================================================
 
         predictions_path = Path(
             self.config.predictions_path
@@ -164,21 +243,26 @@ class ModelEvaluation:
             index=False
         )
 
-        # =========================================
-        # Log predictions artifact
-        # =========================================
+        print(
+            f"\nPredictions saved to:"
+            f"\n{predictions_path}"
+        )
+
+        # =================================================
+        # LOG PREDICTIONS TO MLFLOW
+        # =================================================
 
         mlflow.log_artifact(
             str(predictions_path),
             artifact_path="evaluation"
         )
 
-        # =========================================
-        # Print results
-        # =========================================
+        # =================================================
+        # PRINT FINAL RESULTS
+        # =================================================
 
         print("\n" + "=" * 50)
-        print("UNSEEN DATA EVALUATION")
+        print("EVALUATION RESULTS")
         print("=" * 50)
 
         print(
@@ -194,8 +278,8 @@ class ModelEvaluation:
         )
 
         print(
-            f"\nPredictions saved to:"
-            f"\n{predictions_path}"
+            f"\nModel approved: "
+            f"{model_approved}"
         )
 
         print("\n" + "=" * 50)
@@ -206,4 +290,5 @@ class ModelEvaluation:
             "mae": mae,
             "rmse": rmse,
             "r2": r2,
+            "approved": model_approved,
         }

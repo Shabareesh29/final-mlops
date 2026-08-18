@@ -44,3 +44,22 @@ class ModelEvaluationConfig:
     test_file_path: str
     model_path: str
     predictions_path: str
+    max_mae: float
+    min_r2: float
+    
+@dataclass
+class PredictionConfig:
+    model_path: str
+    scaler_path: str
+    input_file_path: str
+    output_file_path: str
+
+@dataclass
+class ModelPusherConfig:
+    model_path: str
+    model_export_path: str
+
+@dataclass
+class CandidateModelConfig:
+    source_model_path: str
+    candidate_model_path: str

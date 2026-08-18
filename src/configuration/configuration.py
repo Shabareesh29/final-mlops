@@ -6,6 +6,9 @@ from src.entity.config_entity import (
     DataTransformationConfig,
     ModelTrainerConfig,
     ModelEvaluationConfig,
+    PredictionConfig,
+    ModelPusherConfig,
+    CandidateModelConfig,
 )
 
 
@@ -102,9 +105,50 @@ class ConfigurationManager:
             + "/test_processed.csv"
         ),
 
-        model_path=self.config["artifacts"]["model_path"],
+        model_path=self.config["candidate_model"]["model_path"],
 
         predictions_path=self.config["evaluation"][
             "predictions_path"
         ],
+
+        max_mae=self.config["model_quality"][
+            "max_mae"
+        ],
+
+        min_r2=self.config["model_quality"][
+            "min_r2"
+        ],
+    )
+
+    def get_prediction_config(self):
+
+        return PredictionConfig(
+        model_path=self.config["prediction"]["model_path"],
+
+        scaler_path=self.config["prediction"]["scaler_path"],
+
+        input_file_path=self.config["prediction"]["input_file_path"],
+
+        output_file_path=self.config["prediction"]["output_file_path"],
+    )
+    def get_model_pusher_config(self):
+
+        return ModelPusherConfig(
+        model_path=self.config[
+            "candidate_model"
+        ]["model_path"],
+
+        model_export_path=self.config[
+            "model_pusher"
+        ]["model_export_path"],
+    )
+
+    def get_candidate_model_config(self):
+
+        return CandidateModelConfig(
+        source_model_path=self.config["artifacts"]["model_path"],
+
+        candidate_model_path=self.config[
+            "candidate_model"
+        ]["model_path"],
     )

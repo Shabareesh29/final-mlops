@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Turbine Predictive Maintenance
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', path='style.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+
+    <!-- HEADER -->
+
+    <header class="header">
+
+        <div>
+
+            <h1>
+                Turbine Predictive Maintenance
+            </h1>
+
+            <p>
+                AI-powered Remaining Useful Life prediction
+            </p>
+
+        </div>
+
+
+        <div class="system-status">
+
+            <span class="status-dot"></span>
+
+            API ONLINE
+
+        </div>
+
+    </header>
+
+
+
+    <!-- DATA SELECTION -->
+
+    <section class="card">
+
+        <h2>
+            Select Turbine Data
+        </h2>
+
+        <p class="section-description">
+
+            Select a turbine and operating cycle
+            from the FD004 test dataset.
+
+        </p>
+
+
+        <div class="form-grid">
+
+
+            <!-- TURBINE -->
+
+            <div class="form-group">
+
+                <label>
+                    Turbine ID
+                </label>
+
+                <select id="unit_number">
+
+                    <option value="">
+                        Select Turbine
+                    </option>
+
+                </select>
+
+            </div>
+
+
+
+            <!-- CYCLE -->
+
+            <div class="form-group">
+
+                <label>
+                    Operating Cycle
+                </label>
+
+                <select
+                    id="cycle"
+                    disabled
+                >
+
+                    <option value="">
+                        Select Cycle
+                    </option>
+
+                </select>
+
+            </div>
+
+
+        </div>
+
+
+        <button
+            id="loadButton"
+            class="secondary-button"
+            onclick="loadTurbineData()"
+            disabled
+        >
+
+            Load Turbine Data
+
+        </button>
+
+    </section>
+
+
+
+    <!-- OPERATING SETTINGS -->
+
+    <section class="card">
+
+        <h2>
+            Operating Settings
+        </h2>
+
+
+        <div class="form-grid">
+
+
+            <div class="form-group">
+
+                <label>
+                    Setting 1
+                </label>
+
+                <input
+                    id="setting_1"
+                    type="number"
+                    step="any"
+                    readonly
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Setting 2
+                </label>
+
+                <input
+                    id="setting_2"
+                    type="number"
+                    step="any"
+                    readonly
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Setting 3
+                </label>
+
+                <input
+                    id="setting_3"
+                    type="number"
+                    step="any"
+                    readonly
+                >
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+
+    <!-- SENSOR DATA -->
+
+    <section class="card">
+
+        <h2>
+            Sensor Measurements
+        </h2>
+
+        <p class="section-description">
+
+            Sensor values are automatically loaded
+            from the FD004 dataset.
+
+        </p>
+
+
+        <div class="sensor-grid">
+
+
+            {% for i in range(1, 22) %}
+
+            <div class="form-group">
+
+                <label>
+                    Sensor {{ i }}
+                </label>
+
+                <input
+                    id="sensor_{{ i }}"
+                    type="number"
+                    step="any"
+                    readonly
+                >
+
+            </div>
+
+            {% endfor %}
+
+
+        </div>
+
+    </section>
+
+
+
+    <!-- PREDICT -->
+
+    <button
+        id="predictButton"
+        class="predict-button"
+        onclick="predictRUL()"
+        disabled
+    >
+
+        Predict Remaining Useful Life
+
+    </button>
+
+
+
+    <!-- LOADING -->
+
+    <div
+        id="loading"
+        class="loading hidden"
+    >
+
+        <div class="spinner"></div>
+
+        <p>
+            Processing turbine data...
+        </p>
+
+    </div>
+
+
+
+    <!-- RESULT -->
+
+    <section
+        id="result"
+        class="result-card hidden"
+    >
+
+        <h2>
+            Prediction Result
+        </h2>
+
+
+        <div class="result-content">
+
+
+            <div class="rul-value">
+
+                <span id="predictedRul">
+                    --
+                </span>
+
+                <small>
+                    cycles remaining
+                </small>
+
+            </div>
+
+
+            <div
+                id="healthStatus"
+                class="health-status"
+            >
+
+                --
+
+            </div>
+
+
+        </div>
+
+
+        <div class="result-details">
+
+
+            <div>
+
+                <span>
+                    Turbine
+                </span>
+
+                <strong id="resultTurbine">
+                    --
+                </strong>
+
+            </div>
+
+
+            <div>
+
+                <span>
+                    Current Cycle
+                </span>
+
+                <strong id="resultCycle">
+                    --
+                </strong>
+
+            </div>
+
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- ERROR -->
+
+    <div
+        id="error"
+        class="error-card hidden"
+    >
+
+        <strong>
+            Error
+        </strong>
+
+        <p id="errorMessage"></p>
+
+    </div>
+
+
+
+    <!-- FOOTER -->
+
+    <footer>
+
+        <p>
+            NASA CMAPSS FD004
+            &nbsp;•&nbsp;
+            Random Forest
+            &nbsp;•&nbsp;
+            MLOps
+        </p>
+
+        <a
+            href="/docs"
+            target="_blank"
+        >
+
+            API Documentation
+
+        </a>
+
+    </footer>
+
+
+</div>
+
+
+
+<script>
+
+
+// ========================================================
+// LOAD TURBINES WHEN PAGE OPENS
+// ========================================================
+
+async function loadTurbines() {
+
+    try {
+
+        const response =
+            await fetch("/turbines");
+
+        const data =
+            await response.json();
+
+        const turbineSelect =
+            document.getElementById(
+                "unit_number"
+            );
+
+
+        data.turbines.forEach(
+            function(turbine) {
+
+                const option =
+                    document.createElement(
+                        "option"
+                    );
+
+                option.value = turbine;
+
+                option.textContent =
+                    `Turbine ${turbine}`;
+
+                turbineSelect.appendChild(
+                    option
+                );
+
+            }
+        );
+
+
+    }
+
+    catch (error) {
+
+        showError(
+            "Could not load turbines."
+        );
+
+    }
+
+}
+
+
+
+// ========================================================
+// TURBINE SELECTED
+// ========================================================
+
+document
+    .getElementById("unit_number")
+    .addEventListener(
+        "change",
+        async function() {
+
+            const unitNumber =
+                this.value;
+
+            const cycleSelect =
+                document.getElementById(
+                    "cycle"
+                );
+
+            const loadButton =
+                document.getElementById(
+                    "loadButton"
+                );
+
+
+            cycleSelect.innerHTML =
+                '<option value="">Select Cycle</option>';
+
+            cycleSelect.disabled = true;
+
+            loadButton.disabled = true;
+
+
+            if (!unitNumber) {
+
+                return;
+
+            }
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/turbines/${unitNumber}/cycles`
+                    );
+
+                const data =
+                    await response.json();
+
+
+                data.cycles.forEach(
+                    function(cycle) {
+
+                        const option =
+                            document.createElement(
+                                "option"
+                            );
+
+                        option.value =
+                            cycle;
+
+                        option.textContent =
+                            `Cycle ${cycle}`;
+
+                        cycleSelect.appendChild(
+                            option
+                        );
+
+                    }
+                );
+
+
+                cycleSelect.disabled =
+                    false;
+
+
+            }
+
+            catch (error) {
+
+                showError(
+                    "Could not load cycles."
+                );
+
+            }
+
+        }
+    );
+
+
+
+// ========================================================
+// CYCLE SELECTED
+// ========================================================
+
+document
+    .getElementById("cycle")
+    .addEventListener(
+        "change",
+        function() {
+
+            const loadButton =
+                document.getElementById(
+                    "loadButton"
+                );
+
+            loadButton.disabled =
+                !this.value;
+
+        }
+    );
+
+
+
+// ========================================================
+// LOAD TURBINE DATA
+// ========================================================
+
+async function loadTurbineData() {
+
+    const unitNumber =
+        document.getElementById(
+            "unit_number"
+        ).value;
+
+    const cycle =
+        document.getElementById(
+            "cycle"
+        ).value;
+
+
+    if (!unitNumber || !cycle) {
+
+        return;
+
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/turbines/${unitNumber}/cycles/${cycle}`
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.detail
+            );
+
+        }
+
+
+        // -----------------------------------------------
+        // Settings
+        // -----------------------------------------------
+
+        document.getElementById(
+            "setting_1"
+        ).value =
+            data.setting_1;
+
+
+        document.getElementById(
+            "setting_2"
+        ).value =
+            data.setting_2;
+
+
+        document.getElementById(
+            "setting_3"
+        ).value =
+            data.setting_3;
+
+
+        // -----------------------------------------------
+        // Sensors
+        // -----------------------------------------------
+
+        for (
+            let i = 1;
+            i <= 21;
+            i++
+        ) {
+
+            document.getElementById(
+                `sensor_${i}`
+            ).value =
+                data[
+                    `sensor_${i}`
+                ];
+
+        }
+
+
+        // -----------------------------------------------
+        // Enable prediction
+        // -----------------------------------------------
+
+        document.getElementById(
+            "predictButton"
+        ).disabled = false;
+
+
+        hideError();
+
+
+        // Scroll down
+
+        document
+            .getElementById(
+                "predictButton"
+            )
+            .scrollIntoView({
+                behavior: "smooth"
+            });
+
+
+    }
+
+    catch (error) {
+
+        showError(
+            error.message
+        );
+
+    }
+
+}
+
+
+
+// ========================================================
+// PREDICT RUL
+// ========================================================
+
+async function predictRUL() {
+
+
+    const loading =
+        document.getElementById(
+            "loading"
+        );
+
+    const result =
+        document.getElementById(
+            "result"
+        );
+
+    const button =
+        document.getElementById(
+            "predictButton"
+        );
+
+
+    hideError();
+
+    result.classList.add(
+        "hidden"
+    );
+
+    loading.classList.remove(
+        "hidden"
+    );
+
+    button.disabled = true;
+
+
+    try {
+
+
+        const data = {
+
+            unit_number:
+                Number(
+                    document.getElementById(
+                        "unit_number"
+                    ).value
+                ),
+
+            cycle:
+                Number(
+                    document.getElementById(
+                        "cycle"
+                    ).value
+                ),
+
+            setting_1:
+                Number(
+                    document.getElementById(
+                        "setting_1"
+                    ).value
+                ),
+
+            setting_2:
+                Number(
+                    document.getElementById(
+                        "setting_2"
+                    ).value
+                ),
+
+            setting_3:
+                Number(
+                    document.getElementById(
+                        "setting_3"
+                    ).value
+                )
+
+        };
+
+
+        // Add sensors
+
+        for (
+            let i = 1;
+            i <= 21;
+            i++
+        ) {
+
+            data[
+                `sensor_${i}`
+            ] = Number(
+                document.getElementById(
+                    `sensor_${i}`
+                ).value
+            );
+
+        }
+
+
+        // -----------------------------------------------
+        // Send to FastAPI
+        // -----------------------------------------------
+
+        const response =
+            await fetch(
+                "/predict",
+                {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify(
+                            data
+                        )
+
+                }
+            );
+
+
+        const responseData =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                responseData.detail ||
+                "Prediction failed."
+            );
+
+        }
+
+
+        // -----------------------------------------------
+        // Display result
+        // -----------------------------------------------
+
+        document.getElementById(
+            "predictedRul"
+        ).textContent =
+            responseData.predicted_rul;
+
+
+        document.getElementById(
+            "resultTurbine"
+        ).textContent =
+            responseData.unit_number;
+
+
+        document.getElementById(
+            "resultCycle"
+        ).textContent =
+            responseData.cycle;
+
+
+        const status =
+            document.getElementById(
+                "healthStatus"
+            );
+
+
+        status.textContent =
+            responseData.status;
+
+
+        status.classList.remove(
+            "healthy",
+            "warning",
+            "critical"
+        );
+
+
+        if (
+            responseData.status ===
+            "HEALTHY"
+        ) {
+
+            status.classList.add(
+                "healthy"
+            );
+
+        }
+
+        else if (
+            responseData.status ===
+            "WARNING"
+        ) {
+
+            status.classList.add(
+                "warning"
+            );
+
+        }
+
+        else {
+
+            status.classList.add(
+                "critical"
+            );
+
+        }
+
+
+        result.classList.remove(
+            "hidden"
+        );
+
+
+        result.scrollIntoView({
+            behavior: "smooth"
+        });
+
+
+    }
+
+    catch (error) {
+
+        showError(
+            error.message
+        );
+
+    }
+
+
+    finally {
+
+        loading.classList.add(
+            "hidden"
+        );
+
+        button.disabled = false;
+
+    }
+
+}
+
+
+
+// ========================================================
+// ERROR FUNCTIONS
+// ========================================================
+
+function showError(message) {
+
+    const error =
+        document.getElementById(
+            "error"
+        );
+
+    document.getElementById(
+        "errorMessage"
+    ).textContent =
+        message;
+
+    error.classList.remove(
+        "hidden"
+    );
+
+}
+
+
+function hideError() {
+
+    document
+        .getElementById(
+            "error"
+        )
+        .classList.add(
+            "hidden"
+        );
+
+}
+
+
+
+// ========================================================
+// START
+// ========================================================
+
+loadTurbines();
+
+</script>
+
+
+</body>
+
+</html>
