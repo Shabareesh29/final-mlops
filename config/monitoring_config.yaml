@@ -1,0 +1,9 @@
+monitoring:
+  drift_warning_threshold: 0.10
+  drift_critical_threshold: 0.30
+
+  reference_dataset: "FD004"
+
+  report_format: "html"
+
+  save_json: true

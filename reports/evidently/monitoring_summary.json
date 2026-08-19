@@ -1,0 +1,16 @@
+{
+    "project": "turbine-predictive-maintenance",
+    "dataset": "NASA C-MAPSS FD004",
+    "monitor": "data_drift",
+    "reference_dataset": "C:\\Users\\shaba\\OneDrive\\Desktop\\MLOPS\\final-mlops\\data\\raw\\cmapss\\train_FD004.txt",
+    "current_dataset": "C:\\Users\\shaba\\OneDrive\\Desktop\\MLOPS\\final-mlops\\data\\monitoring\\simulated_drift_FD004.csv",
+    "total_columns": 24,
+    "drifted_columns": 3.0,
+    "drift_share": 0.125,
+    "drift_share_percentage": 12.5,
+    "warning_threshold": 0.1,
+    "critical_threshold": 0.3,
+    "governance_status": "WARNING",
+    "evidently_version": "0.7.21",
+    "status": "completed"
+}

@@ -13,7 +13,7 @@ pyyaml
 python-dotenv
 # joblib
 shap
-evidently
+evidently==0.7.21
 pytest
 black
 flake8

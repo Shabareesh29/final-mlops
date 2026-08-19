@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: turbine-mlops
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: turbine-mlops
+
+  template:
+    metadata:
+      labels:
+        app: turbine-mlops
+
+    spec:
+
+      # Secret used to pull the private GHCR Docker image
+      imagePullSecrets:
+        - name: ghcr-secret
+
+      containers:
+        - name: turbine-api
+
+          # Private Docker image stored in GitHub Container Registry
+          image: ghcr.io/shabareesh29/final-mlops:latest
+
+          imagePullPolicy: Always
+
+          ports:
+            - containerPort: 8000
+
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+
+          # Check whether FastAPI is ready to receive traffic
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+
+          # Restart container if the application becomes unhealthy
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 20
+            periodSeconds: 20
