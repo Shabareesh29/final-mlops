@@ -20,6 +20,8 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          lfs: true
 
 
       - name: Set up Python
@@ -32,6 +34,21 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+
+
+      - name: Check installed versions
+        run: |
+          python --version
+          python -c "import numpy; print('numpy:', numpy.__version__)"
+          python -c "import sklearn; print('sklearn:', sklearn.__version__)"
+          python -c "import joblib; print('joblib:', joblib.__version__)"
+          python -c "import mlflow; print('mlflow:', mlflow.__version__)"
+
+
+      - name: Check model file
+        run: |
+          ls -lh artifact/production_model/random_forest_model.pkl
+          file artifact/production_model/random_forest_model.pkl
 
 
       - name: Check Python files
@@ -54,6 +71,8 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          lfs: true
 
 
       - name: Build Docker image
